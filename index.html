@@ -18,6 +18,10 @@
 
 <body>
     <div class="binanceResult">
+        <label for="symbolsele">Symbol Select：</label>
+        <select name="symbolselect" id="symbolsele">
+
+        </select>
         <h1></h1>
         <span class="title">今日漲跌：</span><span class="priceChangePercent"></span>
         <br />
@@ -25,27 +29,52 @@
     </div>
     <script>
         getpricechange();
-        setInterval(getpricechange, 5000);
-        function getpricechange() {
+        var reGetApiInterval = setInterval(getpricechange, 3000);
+        function getpricechange(symbol) {
+            var url = 'https://api.binance.com/api/v3/ticker/24hr';
+            symbol ? url = `${url}?symbol=${symbol}` : $('#symbolsele').val()? url = `${url}?symbol=${$('#symbolsele').val()}` : url;
             $.ajax({
                 type: 'get',
-                url: 'https://api.binance.com/api/v3/ticker/24hr',
+                url: url,
                 success: (req) => {
-                    req.forEach(ele => {
-                        if (ele.symbol == 'BTCUSDT') {
-                            $('h1').text(`${ele.symbol.split('USDT')[0]} / ${ele.symbol.split('BTC')[1]}`);
-                            $('.priceChangePercent').text(`${ele.priceChangePercent}`);
-                            $('.nowprice').text(`${ele.lastPrice.substr(0, 8)}`);
-                            if (Number(ele.priceChangePercent) >= 0) {
-                                $('.priceChangePercent').css('color', 'green');
-                            } else {
-                                $('.priceChangePercent').css('color', 'red');
+                    if (req.length > 1) {
+                        req.forEach(ele => {
+                            if ($('#symbolsele').prop('name') == 'symbolselect') {
+                                $('#symbolsele').append(`<option value="${ele.symbol}">${ele.symbol}</option>`);
                             }
+                            if (ele.symbol == 'BTCUSDT') {
+                                $('#symbolsele').val('BTCUSDT');
+                                $('h1').text(ele.symbol);
+                                $('.priceChangePercent').text(`${ele.priceChangePercent}`);
+                                $('.nowprice').text(`${ele.lastPrice.substr(0, 8)}`);
+                                if (Number(ele.priceChangePercent) >= 0) {
+                                    $('.priceChangePercent').css('color', 'green');
+                                } else {
+                                    $('.priceChangePercent').css('color', 'red');
+                                }
+                            }
+                        });
+                    } else {
+                        $('#symbolsele').val(req.symbol);
+                        $('h1').text(req.symbol);
+                        $('.priceChangePercent').text(req.priceChangePercent);
+                        $('.nowprice').text(req.symbol=='BTCUSDT'?req.lastPrice.substr(0, 8): req.lastPrice);
+                        if (Number(req.priceChangePercent) >= 0) {
+                            $('.priceChangePercent').css('color', 'green');
+                        } else {
+                            $('.priceChangePercent').css('color', 'red');
                         }
-                    });
+                    }
+                    if ($('#symbolsele').prop('name') != 'SymbolSelect') {
+                        $('#symbolsele').prop('name', 'SymbolSelect');
+                    }
                 }
             })
         }
+        $('#symbolsele').change((e) => {
+            clearInterval(reGetApiInterval);
+            var reGetApiInterval = setInterval(getpricechange(e.target.value), 3000);
+        })
     </script>
 </body>
 
