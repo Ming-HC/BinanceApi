@@ -6,12 +6,24 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Get Binance BTC / USDT Ticker Price Api</title>
+    <link rel="shortcut icon" type="image/x-icon" href="/">
     <script src="https://code.jquery.com/jquery-3.7.0.js"
         integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM=" crossorigin="anonymous"></script>
     <style>
-        span {
+        .binanceResult {
+            margin-bottom: 30px;
+        }
+
+        label,
+        span,
+        select,
+        input {
             font-size: 32px;
             font-weight: bolder;
+        }
+
+        #setcall {
+            width: 200px;
         }
     </style>
 </head>
@@ -27,12 +39,21 @@
         <br />
         <span class="title">　　現價：</span><span class="nowprice"></span>
     </div>
+    <div>
+        <label for="setcall">設定提醒價格：</label>
+        <select id="limitcall" value="low">
+            <option value="low">低於</option>
+            <option value="high">高於</option>
+        </select>
+        <input type="text" id="setcall">
+    </div>
     <script>
+        var flag = 1;
         getpricechange();
         var reGetApiInterval = setInterval(getpricechange, 3000);
         function getpricechange(symbol) {
             var url = 'https://api.binance.com/api/v3/ticker/24hr';
-            symbol ? url = `${url}?symbol=${symbol}` : $('#symbolsele').val()? url = `${url}?symbol=${$('#symbolsele').val()}` : url;
+            symbol ? url = `${url}?symbol=${symbol}` : $('#symbolsele').val() ? url = `${url}?symbol=${$('#symbolsele').val()}` : url;
             $.ajax({
                 type: 'get',
                 url: url,
@@ -52,28 +73,72 @@
                                 } else {
                                     $('.priceChangePercent').css('color', 'red');
                                 }
+                                $('title').text(`${ele.symbol == 'BTCUSDT' ? ele.lastPrice.substr(0, 8) : ele.lastPrice} | Get Binance ${ele.symbol} Ticker Price Api`);
                             }
                         });
                     } else {
                         $('#symbolsele').val(req.symbol);
                         $('h1').text(req.symbol);
                         $('.priceChangePercent').text(req.priceChangePercent);
-                        $('.nowprice').text(req.symbol=='BTCUSDT'?req.lastPrice.substr(0, 8): req.lastPrice);
+                        $('.nowprice').text(req.symbol == 'BTCUSDT' ? req.lastPrice.substr(0, 8) : req.lastPrice);
                         if (Number(req.priceChangePercent) >= 0) {
                             $('.priceChangePercent').css('color', 'green');
                         } else {
                             $('.priceChangePercent').css('color', 'red');
                         }
+                        $('title').text(`${req.symbol == 'BTCUSDT' ? req.lastPrice.substr(0, 8) : req.lastPrice} | Get Binance ${req.symbol} Ticker Price Api`);
                     }
                     if ($('#symbolsele').prop('name') != 'SymbolSelect') {
                         $('#symbolsele').prop('name', 'SymbolSelect');
                     }
                 }
             })
+            if ($('#setcall').val() != '' && flag) {
+                switch ($('#limitcall').val()) {
+                    case 'low':
+                        if (Math.floor(Number($('.nowprice').text())) <= Number($('#setcall').val())) {
+                            $('link[rel="shortcut icon"]').prop('href', './images/favicon.ico');
+                            flag = 0;
+                        } else {
+                            $('link[rel="shortcut icon"]').prop('href', '/');
+                        }
+                        break;
+                    case 'high':
+                        if (Math.floor(Number($('.nowprice').text())) >= Number($('#setcall').val())) {
+                            $('link[rel="shortcut icon"]').prop('href', './images/favicon.ico');
+                            flag = 0;
+                        } else {
+                            $('link[rel="shortcut icon"]').prop('href', '/');
+                        }
+                        break;
+
+                }
+            }
         }
         $('#symbolsele').change((e) => {
             clearInterval(reGetApiInterval);
             var reGetApiInterval = setInterval(getpricechange(e.target.value), 3000);
+        })
+        $('#setcall').focusout(() => {
+            flag = 1;
+        })
+        $(window).focus(() => {
+            flag = 1;
+            if ($('link[rel="shortcut icon"]').prop('href') != '/') {
+                $('link[rel="shortcut icon"]').prop('href', '/');
+            }
+        })
+        $(window).blur(() => {
+            flag = 1;
+            if ($('link[rel="shortcut icon"]').prop('href') != '/') {
+                $('link[rel="shortcut icon"]').prop('href', '/');
+            }
+        })
+        $(window).click(() => {
+            flag = 1;
+            if ($('link[rel="shortcut icon"]').prop('href') != '/') {
+                $('link[rel="shortcut icon"]').prop('href', '/');
+            }
         })
     </script>
 </body>
