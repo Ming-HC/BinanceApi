@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Get Binance BTC / USDT Ticker Price Api</title>
+    <script src="https://code.jquery.com/jquery-3.7.0.js"
+        integrity="sha256-JlqSTELeR4TLqP0OG9dxM7yDPqX1ox/HfgiSLBj8+kM=" crossorigin="anonymous"></script>
+    <style>
+        span {
+            font-size: 32px;
+            font-weight: bolder;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="binanceResult">
+        <h1></h1>
+        <span class="title">今日漲跌：</span><span class="priceChangePercent"></span>
+        <br />
+        <span class="title">　　現價：</span><span class="nowprice"></span>
+    </div>
+    <script>
+        getpricechange();
+        setInterval(getpricechange, 5000);
+        function getpricechange() {
+            $.ajax({
+                type: 'get',
+                url: 'https://api.binance.com/api/v3/ticker/24hr',
+                success: (req) => {
+                    req.forEach(ele => {
+                        if (ele.symbol == 'BTCUSDT') {
+                            $('h1').text(`${ele.symbol.split('USDT')[0]} / ${ele.symbol.split('BTC')[1]}`);
+                            $('.priceChangePercent').text(`${ele.priceChangePercent}`);
+                            $('.nowprice').text(`${ele.lastPrice.substr(0, 8)}`);
+                            if (Number(ele.priceChangePercent) >= 0) {
+                                $('.priceChangePercent').css('color', 'green');
+                            } else {
+                                $('.priceChangePercent').css('color', 'red');
+                            }
+                        }
+                    });
+                }
+            })
+        }
+    </script>
+</body>
+
+</html>
